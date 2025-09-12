@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('drivers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->string('license_number')->unique();
             $table->timestamps();
+
+            $table->index('company_id');
         });
     }
 

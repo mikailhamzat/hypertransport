@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('trips', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('driver_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('vehicle_id')->constrained()->cascadeOnDelete();
+            $table->string('status')->default('scheduled');
+            $table->timestamp('starts_at');
+            $table->timestamp('ends_at');
             $table->timestamps();
+
+            $table->index('company_id');
+            $table->index(['driver_id', 'starts_at', 'ends_at']);
+            $table->index(['vehicle_id', 'starts_at', 'ends_at']);
         });
     }
 
