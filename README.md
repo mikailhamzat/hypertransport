@@ -1,61 +1,138 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# HyperTransport 🚐
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A transportation management system built with **Laravel 12** and **Filament 4** for the **Hypersender Coding Challenge**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+[![Build Status](https://github.com/mikailhamzat/hypertransport/actions/workflows/tests.yml/badge.svg)](https://github.com/mikailhamzat/hypertransport/actions)
+[![License](https://img.shields.io/github/license/mikailhamzat/hypertransport)](./LICENSE)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📌 Assumptions
 
-## Learning Laravel
+-   A trip lasts **1–8 hours** by default.
+-   **Overlap rule**:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+    -   A driver cannot be assigned to more than one trip that overlaps in time.
+    -   A vehicle cannot be assigned to more than one trip that overlaps in time.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+-   **Trip status life-cycle**:
+    `scheduled → active (when current time enters window) → completed`
+-   **KPIs** are recalculated every 60 seconds (cached) for performance.
+-   A single admin user manages all companies (not multi-tenant SaaS, just company-scoped data in one DB).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🏗️ Design Decisions
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Service Layer
 
-### Premium Partners
+-   Business logic like preventing overlapping trips is handled in dedicated service classes (`TripSchedulerService`) for testability and clarity.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Scopes
+
+-   Custom Eloquent scopes (`overlapping()`, `availableBetween()`, `ongoing()`) make queries reusable and expressive.
+
+### Caching
+
+-   KPIs (active trips, available drivers, trips completed) are cached for **60s** to reduce repeated heavy queries on the dashboard.
+
+### Indexes
+
+-   `company_id` on drivers, vehicles, and trips for faster company lookups.
+-   Unique indexes on `drivers.license_number` and `vehicles.plate_number`.
+-   Composite index on `trips (driver_id, start_at, end_at)` and `(vehicle_id, start_at, end_at)` to speed up overlap checks.
+
+---
+
+## ⚙️ Setup
+
+```bash
+# Clone repo
+git clone https://github.com/mikailhamzat/hypertransport.git
+cd hypertransport
+
+# Install dependencies
+composer install
+npm install && npm run build
+
+# Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# Database setup
+php artisan migrate --seed
+
+# Create a test user
+php artisan make:filament-user
+
+# Run the app
+php artisan serve
+```
+
+---
+
+## 📊 Features
+
+-   **Dashboard KPIs**: active trips, available drivers/vehicles, monthly completed trips.
+-   **Custom Availability Page**: select a time range → see free drivers and vehicles.
+-   **Business Rules**: no overlapping trips per driver/vehicle.
+-   **UI Customization**: modernized Filament theme (navbar color, headers, activity count in topbar).
+
+---
+
+## 🧪 Testing
+
+Tests are written with **Pest**.
+
+Run the full suite with coverage:
+
+```bash
+php artisan test --coverage --min=80
+```
+
+### What’s Covered
+
+-   Trip scheduling rules (overlaps, invalid times).
+-   Availability scopes.
+-   KPI calculations.
+-   Filament forms and custom pages.
+
+**Target:** ≥ 80% coverage
+
+---
+
+## 🚀 Performance Notes
+
+-   **Eager Loading**: Drivers and Vehicles are eager-loaded with trips to prevent N+1 queries.
+-   **Caching**: KPI queries cached for 60 seconds to avoid heavy recalculations.
+-   **Indexes**: Foreign keys and composite indexes optimize trip overlap lookups.
+
+---
+
+## 📂 Tech Stack
+
+-   **Laravel 12**
+-   **Filament 4** (admin panel, resources, custom pages)
+-   **Pest** (testing)
+-   **Tailwind** (UI styling)
+-   **MySQL**
+
+---
+
+## 👨‍💻 Author
+
+Built by **Mikail Hamzat** as part of the **Hypersender Filament Coding Challenge**.
+
+---
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Contributions welcome. Open an issue or send a PR.
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the [MIT License](./LICENSE).
