@@ -88,6 +88,7 @@ class TripResource extends Resource
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('status')
+                    ->badge()
                     ->searchable(),
                 TextColumn::make('starts_at')
                     ->dateTime()

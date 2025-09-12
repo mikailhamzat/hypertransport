@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +11,10 @@ class Trip extends Model
 {
     /** @use HasFactory<\Database\Factories\TripFactory> */
     use HasFactory;
+
+    protected $casts = [
+        'status' => Status::class,
+    ];
 
     /**
      * Get the company that owns the Trip
