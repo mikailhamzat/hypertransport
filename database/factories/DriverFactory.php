@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Driver;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class DriverFactory extends Factory
 {
+    protected $model = Driver::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,7 +20,9 @@ class DriverFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'company_id' => null, // assign in seeder
+            'name' => $this->faker->name,
+            'license_number' => strtoupper($this->faker->unique()->bothify('??######')),
         ];
     }
 }

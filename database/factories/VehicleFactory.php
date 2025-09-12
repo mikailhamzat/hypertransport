@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class VehicleFactory extends Factory
 {
+    protected $model = Vehicle::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,7 +20,9 @@ class VehicleFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'company_id' => null, // assign in seeder
+            'plate_number' => strtoupper($this->faker->unique()->bothify('ABC-####')),
+            'model' => $this->faker->word,
         ];
     }
 }
