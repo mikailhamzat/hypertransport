@@ -22,7 +22,7 @@ class DriverResource extends Resource
 {
     protected static ?string $model = Driver::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUser;
 
     public static function form(Schema $schema): Schema
     {
@@ -41,14 +41,9 @@ class DriverResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('company_id')
-                    ->numeric(),
                 TextEntry::make('name'),
                 TextEntry::make('license_number'),
-                TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
-                    ->dateTime(),
+                TextEntry::make('company.name'),
             ]);
     }
 
@@ -56,21 +51,13 @@ class DriverResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('company_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('#')
+                    ->rowIndex(),
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('license_number')
                     ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('company.name'),
             ])
             ->filters([
                 //

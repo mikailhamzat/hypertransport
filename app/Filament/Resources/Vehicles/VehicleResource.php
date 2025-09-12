@@ -2,37 +2,36 @@
 
 namespace App\Filament\Resources\Vehicles;
 
-use App\Filament\Resources\Vehicles\Pages\ManageVehicles;
-use App\Models\Vehicle;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
+use App\Models\Vehicle;
+use Filament\Tables\Table;
+use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Resources\Resource;
+use Filament\Actions\DeleteAction;
+use Filament\Support\Icons\Heroicon;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
+use App\Filament\Resources\Vehicles\Pages\ManageVehicles;
 
 class VehicleResource extends Resource
 {
     protected static ?string $model = Vehicle::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextColumn::make('#')
-                    ->rowIndex(),
-                TextInput::make('company_id')
-                    ->required()
-                    ->numeric(),
+                Select::make('company_id')
+                    ->relationship('company', 'name')
+                    ->required(),
                 TextInput::make('plate_number')
                     ->required(),
                 TextInput::make('model'),
@@ -43,7 +42,7 @@ class VehicleResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('company_id')
+                TextEntry::make('company.name')
                     ->numeric(),
                 TextEntry::make('plate_number'),
                 TextEntry::make('model'),
@@ -58,7 +57,10 @@ class VehicleResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('company_id')
+
+                TextColumn::make('#')
+                    ->rowIndex(),
+                TextColumn::make('company.name')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('plate_number')
