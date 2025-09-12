@@ -4,7 +4,7 @@ A transportation management system built with **Laravel 12** and **Filament 4** 
 
 ---
 
-[![Build Status](https://github.com/mikailhamzat/hypertransport/actions/workflows/tests.yml/badge.svg)](https://github.com/mikailhamzat/hypertransport/actions)
+[![Build Status](https://github.com/mikailhamzat/hypertransport/actions/workflows/test.yml/badge.svg)](https://github.com/mikailhamzat/hypertransport/actions)
 [![License](https://img.shields.io/github/license/mikailhamzat/hypertransport)](./LICENSE)
 
 ---
