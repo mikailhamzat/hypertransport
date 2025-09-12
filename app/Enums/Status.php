@@ -10,6 +10,7 @@ enum Status: string implements HasLabel, HasColor
     case SCHEDULED = 'scheduled';
     case ACTIVE = 'active';
     case COMPLETED = 'completed';
+    case CANCELLED = 'cancelled';
 
     public function getLabel(): ?string
     {
@@ -17,6 +18,7 @@ enum Status: string implements HasLabel, HasColor
             self::SCHEDULED => 'Scheduled',
             self::ACTIVE => 'Active',
             self::COMPLETED => 'Completed',
+            self::CANCELLED => 'Cancelled',
         };
     }
 
@@ -26,6 +28,7 @@ enum Status: string implements HasLabel, HasColor
             self::SCHEDULED => 'gray',
             self::ACTIVE => 'primary',
             self::COMPLETED => 'success',
+            self::CANCELLED => 'danger',
         };
     }
 }

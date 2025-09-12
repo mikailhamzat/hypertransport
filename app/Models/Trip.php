@@ -12,9 +12,34 @@ class Trip extends Model
     /** @use HasFactory<\Database\Factories\TripFactory> */
     use HasFactory;
 
-    protected $casts = [
-        'status' => Status::class,
-    ];
+    /**
+     * Get the status of the trip.
+     *
+     * @return \App\Enums\Status
+     */
+    public function getStatusAttribute(): Status
+    {
+        if ($this->cancelled_at) {
+            return Status::CANCELLED;
+        }
+
+        if ($this->completed_at) {
+            return Status::COMPLETED;
+        }
+
+        $now = now();
+
+        if ($this->starts_at > $now) {
+            return Status::SCHEDULED;
+        }
+
+        if ($this->ends_at <= $now) {
+            return Status::COMPLETED;
+        }
+
+        return Status::ACTIVE;
+    }
+
 
     /**
      * Get the company that owns the Trip

@@ -2,119 +2,164 @@
 
 namespace Database\Factories;
 
-use App\Enums\Status;
 use App\Models\Trip;
-use App\Models\Driver;
-use App\Models\Company;
-use App\Models\Vehicle;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Trip>
- */
 class TripFactory extends Factory
 {
     protected $model = Trip::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        // Default: scheduled trip in the near future
-        $start = Carbon::now()->addDays(rand(1, 5))->setTime(rand(6, 12), 0);
-        $end = (clone $start)->addHours(rand(1, 8));
+        $start = $this->faker->dateTimeBetween('+1 day', '+10 days');
+        $end = (clone $start)->modify('+' . rand(1, 6) . ' hours');
 
         return [
-            'company_id' => null, // assign in seeder
-            'driver_id' => null,  // assign in seeder
-            'vehicle_id' => null, // assign in seeder
+            'company_id' => null,
+            'driver_id' => null,
+            'vehicle_id' => null,
             'starts_at' => $start,
             'ends_at' => $end,
-            'status' => Status::SCHEDULED->value,
+            'completed_at' => null,
+            'cancelled_at' => null,
         ];
     }
 
-    /**
-     * Create a completed (past) trip
-     */
     public function completed(): static
     {
-        $start = Carbon::now()->subDays(rand(2, 10))->setTime(rand(6, 12), 0);
-        $end = (clone $start)->addHours(rand(1, 8));
+        $start = Carbon::now()->subDays(rand(1, 30))->setTime(rand(6, 20), 0);
+        $end = (clone $start)->addHours(rand(1, 6));
+
+        // 70% completed naturally, 30% completed early
+        $completedAt = rand(1, 10) <= 7
+            ? $end
+            : $start->copy()->addHours(rand(1, $end->diffInHours($start)));
 
         return $this->state([
             'starts_at' => $start,
             'ends_at' => $end,
-            'status' => Status::COMPLETED->value,
+            'completed_at' => $completedAt,
+            'cancelled_at' => null,
         ]);
     }
 
-    /**
-     * Create an active (ongoing) trip
-     */
     public function active(): static
     {
-        $start = Carbon::now()->subHours(rand(1, 2));
-        $end = Carbon::now()->addHours(rand(1, 3));
+        $now = Carbon::now();
+        $start = $now->copy()->subHours(rand(1, 3));
+        $end = $now->copy()->addHours(rand(1, 4));
 
         return $this->state([
             'starts_at' => $start,
             'ends_at' => $end,
-            'status' => Status::ACTIVE->value,
+            'completed_at' => null,
+            'cancelled_at' => null,
         ]);
     }
 
-    /**
-     * Ensure no overlapping trips for a given driver and vehicle.
-     */
-    public function noOverlap(Driver $driver, Vehicle $vehicle, Company $company): static
+    public function scheduled(): static
     {
-        return $this->state(function () use ($driver, $vehicle, $company) {
-            $start = Carbon::now()->addDays(rand(1, 10))->setTime(rand(6, 12), 0);
-            $end = (clone $start)->addHours(rand(1, 8));
+        $start = Carbon::now()->addDays(rand(1, 15))->setTime(rand(6, 20), 0);
+        $end = (clone $start)->addHours(rand(1, 6));
 
-            // Loop until no overlaps for driver
-            while (Trip::where('driver_id', $driver->id)
-                ->where(function ($q) use ($start, $end) {
-                    $q->whereBetween('starts_at', [$start, $end])
-                        ->orWhereBetween('ends_at', [$start, $end])
-                        ->orWhere(function ($q2) use ($start, $end) {
-                            $q2->where('starts_at', '<', $start)
-                                ->where('ends_at', '>', $end);
-                        });
-                })->exists()
-            ) {
-                $start->addHour();
-                $end = (clone $start)->addHours(rand(1, 8));
+        return $this->state([
+            'starts_at' => $start,
+            'ends_at' => $end,
+            'completed_at' => null,
+            'cancelled_at' => null,
+        ]);
+    }
+
+    public function cancelled(): static
+    {
+        $start = Carbon::now()
+            ->addDays(rand(-15, 15))
+            ->setTime(rand(6, 20), 0);
+        $end = (clone $start)->addHours(rand(1, 6));
+
+        return $this->state([
+            'starts_at' => $start,
+            'ends_at' => $end,
+            'completed_at' => null,
+            'cancelled_at' => now(),
+        ]);
+    }
+
+    public function noOverlap($driver, $vehicle, $company): static
+    {
+        return $this->state(function (array $attributes) use ($driver, $vehicle, $company) {
+            $maxRetries = 20;
+
+            $baseStart = $attributes['starts_at'] ?? null;
+            $baseEnd = $attributes['ends_at'] ?? null;
+            $completedAt = $attributes['completed_at'] ?? null;
+            $cancelledAt = $attributes['cancelled_at'] ?? null;
+
+            for ($i = 0; $i < $maxRetries; $i++) {
+
+                if ($baseStart && $baseEnd) {
+                    $start = $baseStart;
+                    $end = $baseEnd;
+                } else {
+                    [$start, $end] = $this->generateTimeRange();
+                }
+
+                if (!$this->hasOverlap($driver, $vehicle, $company, $start, $end)) {
+                    return [
+                        'company_id' => $company->id,
+                        'driver_id' => $driver->id,
+                        'vehicle_id' => $vehicle->id,
+                        'starts_at' => $start,
+                        'ends_at' => $end,
+                        'completed_at' => $completedAt,
+                        'cancelled_at' => $cancelledAt,
+                    ];
+                }
+
+                if ($baseStart && $baseEnd) {
+                    $baseStart = $baseEnd = null;
+                }
             }
 
-            // Loop until no overlaps for vehicle
-            while (Trip::where('vehicle_id', $vehicle->id)
-                ->where(function ($q) use ($start, $end) {
-                    $q->whereBetween('starts_at', [$start, $end])
-                        ->orWhereBetween('ends_at', [$start, $end])
-                        ->orWhere(function ($q2) use ($start, $end) {
-                            $q2->where('starts_at', '<', $start)
-                                ->where('ends_at', '>', $end);
-                        });
-                })->exists()
-            ) {
-                $start->addHour();
-                $end = (clone $start)->addHours(rand(1, 8));
-            }
+            $fallbackStart = Carbon::now()->addDays(rand(30, 45))->setTime(8, 0);
+            $fallbackEnd = $fallbackStart->copy()->addHours(2);
 
             return [
                 'company_id' => $company->id,
                 'driver_id' => $driver->id,
                 'vehicle_id' => $vehicle->id,
-                'starts_at' => $start,
-                'ends_at' => $end,
-                'status' => Status::SCHEDULED->value,
+                'starts_at' => $fallbackStart,
+                'ends_at' => $fallbackEnd,
+                'completed_at' => null,
+                'cancelled_at' => null,
             ];
         });
+    }
+
+    private function generateTimeRange(): array
+    {
+        $start = Carbon::now()
+            ->addDays(rand(-30, 30))
+            ->setTime(rand(6, 20), 0);
+
+        $end = $start->copy()->addHours(rand(1, 6));
+
+        return [$start, $end];
+    }
+
+    private function hasOverlap($driver, $vehicle, $company, $start, $end): bool
+    {
+        return Trip::where('company_id', $company->id)
+            ->whereNull('cancelled_at')
+            ->where(function ($query) use ($driver, $vehicle) {
+                $query->where('driver_id', $driver->id)
+                    ->orWhere('vehicle_id', $vehicle->id);
+            })
+            ->where(function ($query) use ($start, $end) {
+                $query->where('starts_at', '<', $end)
+                    ->where('ends_at', '>', $start);
+            })
+            ->exists();
     }
 }

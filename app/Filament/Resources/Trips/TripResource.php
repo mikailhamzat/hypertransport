@@ -41,10 +41,6 @@ class TripResource extends Resource
                 Select::make('vehicle_id')
                     ->relationship('vehicle', 'id')
                     ->required(),
-                Select::make('status')
-                    ->options(Status::class)
-                    ->required()
-                    ->default(Status::SCHEDULED->value),
                 DateTimePicker::make('starts_at')
                     ->required(),
                 DateTimePicker::make('ends_at')
@@ -78,6 +74,8 @@ class TripResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('#')
+                    ->rowIndex(),
                 TextColumn::make('company.name')
                     ->numeric()
                     ->sortable(),

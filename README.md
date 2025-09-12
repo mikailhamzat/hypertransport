@@ -64,14 +64,11 @@ php artisan key:generate
 # Database setup
 php artisan migrate --seed
 
-# Create a test user
-php artisan make:filament-user
-
 # Run the app
 php artisan serve
 
-# visit login page
-http://localhost:8000/admin
+# Create a test user and get the login link
+php artisan make:filament-user
 ```
 
 ---

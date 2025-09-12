@@ -20,7 +20,7 @@ class VehicleFactory extends Factory
     public function definition(): array
     {
         return [
-            'company_id' => null, // assign in seeder
+            'company_id' => null,
             'plate_number' => strtoupper($this->faker->unique()->bothify('ABC-####')),
             'model' => $this->faker->word,
         ];

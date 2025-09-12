@@ -20,7 +20,7 @@ class DriverFactory extends Factory
     public function definition(): array
     {
         return [
-            'company_id' => null, // assign in seeder
+            'company_id' => null,
             'name' => $this->faker->name,
             'license_number' => strtoupper($this->faker->unique()->bothify('??######')),
         ];
