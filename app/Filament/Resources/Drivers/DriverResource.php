@@ -28,9 +28,8 @@ class DriverResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('company_id')
-                    ->required()
-                    ->numeric(),
+                TextColumn::make('#')
+                    ->rowIndex(),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('license_number')

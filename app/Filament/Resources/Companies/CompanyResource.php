@@ -57,6 +57,8 @@ class CompanyResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('#')
+                    ->rowIndex(),
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('email')

@@ -30,6 +30,8 @@ class TripResource extends Resource
     {
         return $schema
             ->components([
+                TextColumn::make('#')
+                    ->rowIndex(),
                 Select::make('company_id')
                     ->relationship('company', 'name')
                     ->required(),

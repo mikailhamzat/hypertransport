@@ -28,6 +28,8 @@ class VehicleResource extends Resource
     {
         return $schema
             ->components([
+                TextColumn::make('#')
+                    ->rowIndex(),
                 TextInput::make('company_id')
                     ->required()
                     ->numeric(),
