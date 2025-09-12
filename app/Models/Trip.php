@@ -12,6 +12,13 @@ class Trip extends Model
     /** @use HasFactory<\Database\Factories\TripFactory> */
     use HasFactory;
 
+    protected $casts = [
+        'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+    ];
+
     /**
      * Get the status of the trip.
      *
