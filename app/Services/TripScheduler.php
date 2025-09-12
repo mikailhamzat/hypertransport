@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Status;
 use App\Models\Trip;
 use App\Models\Driver;
 use App\Models\Company;
@@ -39,7 +40,7 @@ final class TripScheduler
             'vehicle_id' => $vehicle->id,
             'starts_at'  => $start,
             'ends_at'    => $end,
-            'status'     => 'scheduled',
+            'status'     => Status::SCHEDULED->value,
         ]);
     }
 }

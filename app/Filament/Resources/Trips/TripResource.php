@@ -2,23 +2,23 @@
 
 namespace App\Filament\Resources\Trips;
 
-use App\Filament\Resources\Trips\Pages\ManageTrips;
-use App\Models\Trip;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
+use App\Models\Trip;
+use App\Enums\Status;
+use Filament\Tables\Table;
+use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
+use Filament\Actions\DeleteAction;
 use Filament\Support\Icons\Heroicon;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Forms\Components\DateTimePicker;
+use App\Filament\Resources\Trips\Pages\ManageTrips;
 
 class TripResource extends Resource
 {
@@ -41,9 +41,10 @@ class TripResource extends Resource
                 Select::make('vehicle_id')
                     ->relationship('vehicle', 'id')
                     ->required(),
-                TextInput::make('status')
+                Select::make('status')
+                    ->options(Status::class)
                     ->required()
-                    ->default('scheduled'),
+                    ->default(Status::SCHEDULED->value),
                 DateTimePicker::make('starts_at')
                     ->required(),
                 DateTimePicker::make('ends_at')

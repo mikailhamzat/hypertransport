@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Status;
 use App\Models\Trip;
 use App\Models\Driver;
 use App\Models\Company;
@@ -33,7 +34,7 @@ class TripFactory extends Factory
             'vehicle_id' => null, // assign in seeder
             'starts_at' => $start,
             'ends_at' => $end,
-            'status' => 'scheduled',
+            'status' => Status::SCHEDULED->value,
         ];
     }
 
@@ -48,7 +49,7 @@ class TripFactory extends Factory
         return $this->state([
             'starts_at' => $start,
             'ends_at' => $end,
-            'status' => 'completed',
+            'status' => Status::COMPLETED->value,
         ]);
     }
 
@@ -63,7 +64,7 @@ class TripFactory extends Factory
         return $this->state([
             'starts_at' => $start,
             'ends_at' => $end,
-            'status' => 'active',
+            'status' => Status::ACTIVE->value,
         ]);
     }
 
@@ -112,7 +113,7 @@ class TripFactory extends Factory
                 'vehicle_id' => $vehicle->id,
                 'starts_at' => $start,
                 'ends_at' => $end,
-                'status' => 'scheduled',
+                'status' => Status::SCHEDULED->value,
             ];
         });
     }
