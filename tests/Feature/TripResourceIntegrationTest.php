@@ -14,7 +14,7 @@ beforeEach(function () {
     // Create a user for authentication
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
-    
+
     $this->company = Company::factory()->create(['name' => 'Test Company']);
     $this->driver = Driver::factory()->create([
         'company_id' => $this->company->id,
@@ -24,20 +24,20 @@ beforeEach(function () {
         'company_id' => $this->company->id,
         'plate_number' => 'ABC-123'
     ]);
-    
+
     // Create some test trips
     $this->scheduledTrip = Trip::factory()->scheduled()->create([
         'company_id' => $this->company->id,
         'driver_id' => $this->driver->id,
         'vehicle_id' => $this->vehicle->id,
     ]);
-    
+
     $this->activeTrip = Trip::factory()->active()->create([
         'company_id' => $this->company->id,
         'driver_id' => Driver::factory()->create(['company_id' => $this->company->id])->id,
         'vehicle_id' => Vehicle::factory()->create(['company_id' => $this->company->id])->id,
     ]);
-    
+
     $this->completedTrip = Trip::factory()->completed()->create([
         'company_id' => $this->company->id,
         'driver_id' => Driver::factory()->create(['company_id' => $this->company->id])->id,
@@ -74,7 +74,7 @@ describe('Trip Resource Page Rendering', function () {
 describe('Trip Status Display', function () {
     it('displays correct status for scheduled trip', function () {
         expect($this->scheduledTrip->status)->toBe(Status::SCHEDULED);
-        
+
         Livewire::test(ManageTrips::class)
             ->assertTableRecordExists($this->scheduledTrip)
             ->assertTableColumnStateSet('status', Status::SCHEDULED->getLabel(), record: $this->scheduledTrip);
@@ -82,7 +82,7 @@ describe('Trip Status Display', function () {
 
     it('displays correct status for active trip', function () {
         expect($this->activeTrip->status)->toBe(Status::ACTIVE);
-        
+
         Livewire::test(ManageTrips::class)
             ->assertTableRecordExists($this->activeTrip)
             ->assertTableColumnStateSet('status', Status::ACTIVE->getLabel(), record: $this->activeTrip);
@@ -90,7 +90,7 @@ describe('Trip Status Display', function () {
 
     it('displays correct status for completed trip', function () {
         expect($this->completedTrip->status)->toBe(Status::COMPLETED);
-        
+
         Livewire::test(ManageTrips::class)
             ->assertTableRecordExists($this->completedTrip)
             ->assertTableColumnStateSet('status', Status::COMPLETED->getLabel(), record: $this->completedTrip);
@@ -135,7 +135,7 @@ describe('Trip Record Actions', function () {
         Livewire::test(ManageTrips::class)
             ->callTableRecordAction('delete', $this->scheduledTrip)
             ->assertSuccessful();
-            
+
         $this->assertDatabaseMissing('trips', ['id' => $this->scheduledTrip->id]);
     });
 });
@@ -144,10 +144,10 @@ describe('Trip Creation Flow', function () {
     it('can create a new trip', function () {
         $newDriver = Driver::factory()->create(['company_id' => $this->company->id]);
         $newVehicle = Vehicle::factory()->create(['company_id' => $this->company->id]);
-        
+
         $start = Carbon::now()->addDays(2);
         $end = $start->copy()->addHours(3);
-        
+
         Livewire::test(ManageTrips::class)
             ->callHeaderAction('create', data: [
                 'company_id' => $this->company->id,
@@ -158,7 +158,7 @@ describe('Trip Creation Flow', function () {
             ])
             ->assertSuccessful()
             ->assertHasNoTableRecordActionErrors();
-        
+
         $this->assertDatabaseHas('trips', [
             'company_id' => $this->company->id,
             'driver_id' => $newDriver->id,
@@ -169,7 +169,7 @@ describe('Trip Creation Flow', function () {
     it('prevents creating overlapping trips', function () {
         $start = $this->scheduledTrip->starts_at->copy()->addMinutes(30);
         $end = $this->scheduledTrip->ends_at->copy()->addMinutes(30);
-        
+
         Livewire::test(ManageTrips::class)
             ->callHeaderAction('create', data: [
                 'company_id' => $this->company->id,
@@ -201,12 +201,12 @@ describe('Trip Bulk Actions', function () {
             'driver_id' => $this->driver->id,
             'vehicle_id' => $this->vehicle->id,
         ]);
-        
+
         Livewire::test(ManageTrips::class)
             ->selectTableRecords($trips->pluck('id')->toArray())
-            ->callTableBulkAction('delete')
+            ->bulkAction('delete')
             ->assertSuccessful();
-        
+
         foreach ($trips as $trip) {
             $this->assertDatabaseMissing('trips', ['id' => $trip->id]);
         }
@@ -217,7 +217,7 @@ describe('Trip Form Field Dependencies', function () {
     it('filters drivers by selected company', function () {
         $otherCompany = Company::factory()->create();
         $otherDriver = Driver::factory()->create(['company_id' => $otherCompany->id]);
-        
+
         // When creating a trip, drivers should be filtered by company
         Livewire::test(ManageTrips::class)
             ->callHeaderAction('create')
@@ -231,7 +231,7 @@ describe('Trip Form Field Dependencies', function () {
     it('filters vehicles by selected company', function () {
         $otherCompany = Company::factory()->create();
         $otherVehicle = Vehicle::factory()->create(['company_id' => $otherCompany->id]);
-        
+
         // When creating a trip, vehicles should be filtered by company
         Livewire::test(ManageTrips::class)
             ->callHeaderAction('create')

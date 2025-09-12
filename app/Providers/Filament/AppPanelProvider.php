@@ -28,18 +28,28 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->login()
+
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('15rem')
+
+            ->brandName('HyperTransport')
+            ->brandLogo(fn() => asset('images/logo.png'))
+            ->brandLogoHeight('4rem')
+            ->favicon(fn() => asset('images/favicon.png'))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#2563eb'),
             ])
+            ->font('Poppins')
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                // Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                // AccountWidget::class,
+                // FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

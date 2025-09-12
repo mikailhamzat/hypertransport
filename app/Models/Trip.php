@@ -103,6 +103,8 @@ class Trip extends Model
      */
     public function scopeOngoing($q)
     {
-        return $q->where('starts_at', '<=', now())->where('ends_at', '>=', now());
+        return $q->where('starts_at', '<=', now())->where('ends_at', '>=', now())
+            ->whereNull('completed_at')
+            ->whereNull('cancelled_at');
     }
 }
