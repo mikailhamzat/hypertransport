@@ -69,6 +69,9 @@ php artisan make:filament-user
 
 # Run the app
 php artisan serve
+
+# visit login page
+http://localhost:8000/admin
 ```
 
 ---
