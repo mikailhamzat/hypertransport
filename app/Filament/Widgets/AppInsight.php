@@ -13,6 +13,9 @@ use Carbon\Carbon;
 class AppInsight extends StatsOverviewWidget
 {
     protected ?string $pollingInterval = '60s';
+    protected ?string $heading = 'App Insights';
+    protected ?string $description = 'Key performance indicators for the app';
+
 
     protected function getStats(): array
     {
