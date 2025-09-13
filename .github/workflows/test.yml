@@ -12,42 +12,51 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
         with:
           php-version: "8.2"
           extensions: ctype, curl, dom, fileinfo, filter, hash, intl, json, libxml, mbstring, openssl, pcre, pdo, pdo_sqlite, session, tokenizer, xml, xmlwriter
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
+
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
       - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+
       - name: Install PHP Dependencies
         run: |
           composer --version
           php --version
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          composer install --no-ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
       - name: Install Node Dependencies
         run: npm ci
+
       - name: Generate key
         run: php artisan key:generate
-      - name: Run Filament upgrade
-        run: php artisan filament:upgrade
+
       - name: Directory Permissions
         run: chmod -R 777 storage bootstrap/cache
+
       - name: Create Database
         run: |
           mkdir -p database
           touch database/database.sqlite
+
       - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
         env:
           DB_CONNECTION: sqlite
